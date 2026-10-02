@@ -77,7 +77,8 @@ def list_videos():
         out = ytdlp("--flat-playlist", "-j", "--playlist-end", str(limit), f"https://www.tiktok.com/@{handle}")
         entries = [json.loads(l) for l in out.stdout.splitlines() if l.startswith("{")]
         err = (out.stderr or out.stdout or "sin salida")[-500:]
-        print(f"intento {attempt + 1}: {len(entries)} videos; yt-dlp: {err[-200:]!r}", file=sys.stderr)
+        # Solo conteos: la salida de yt-dlp trae el nombre de la cuenta y el log es público.
+        print(f"intento {attempt + 1}: {len(entries)} videos", file=sys.stderr)
         if entries:
             return entries
         time.sleep(10 * (attempt + 1))
@@ -100,7 +101,7 @@ try:
             try:
                 item["mediaUrl"] = upload_media(client, e.get("webpage_url") or e.get("url"), item)
             except Exception as ex:  # sin medio: Gancho reintenta la transcripción o la marca fallida
-                print("medio", e.get("id"), ex, file=sys.stderr)
+                print("medio", e.get("id"), str(ex)[:80], file=sys.stderr)
         items.append(item)
     print(f"{handle}: {len(items)} videos, {sum('mediaUrl' in i for i in items)} con medio, {sum('transcript' in i for i in items)} con transcript")
     post({"run": run, "items": items})
