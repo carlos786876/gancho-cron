@@ -1,0 +1,24 @@
+# Worker de TikTok para Gancho: lo dispara Gancho (repository_dispatch) por cada cuenta a revisar.
+# yt-dlp lista los videos, sube a Gemini el medio de los que se analizarán y devuelve todo a Gancho.
+name: tiktok-scrape
+on:
+  repository_dispatch:
+    types: [tiktok-scrape]
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q yt-dlp curl_cffi google-genai
+      - run: python .github/scripts/tiktok_scrape.py
+        env:
+          GANCHO_URL: ${{ secrets.GANCHO_URL }}
+          GANCHO_TOKEN: ${{ secrets.GANCHO_CRON_SECRET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
