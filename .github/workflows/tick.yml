@@ -1,0 +1,19 @@
+# Bombea la cola de Gancho cada 10 minutos sin depender de una pestaña abierta.
+# Repo público a propósito: GitHub Actions es gratis y sin tope de minutos en repos públicos.
+# GitHub pausa los schedule tras 60 días sin commits: reactivar en la pestaña Actions.
+name: tick
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - run: >
+          curl -fsS -m 300 -o /dev/null -w "HTTP %{http_code} en %{time_total}s\n"
+          -X POST -H "Authorization: Bearer $CRON_SECRET" "$GANCHO_URL/api/cron/tick"
+        env:
+          CRON_SECRET: ${{ secrets.GANCHO_CRON_SECRET }}
+          GANCHO_URL: ${{ secrets.GANCHO_URL }}
